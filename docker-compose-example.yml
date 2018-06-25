@@ -23,8 +23,8 @@ services:
         ports:
             - "8080:80"
 
-    db:
-        image: mysql
+    yii-db:
+        image: mariadb
         environment:
             MYSQL_ROOT_PASSWORD: root
             MYSQL_DATABASE: web
