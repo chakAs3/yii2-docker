@@ -16,7 +16,7 @@ services:
             #   docker-compose run --rm web cp -ra /var/www/vendor .
             #- ./vendor:/var/www/vendor
         links:
-            - db
+            - yii-db
         environment:
             # Make sure to tweak this in production
             PHP_FPM_MAX_CHILDREN: 5
