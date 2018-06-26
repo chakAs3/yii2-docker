@@ -1,0 +1,73 @@
+version: 2.0
+jobs:
+    build:
+        working_directory: /var/www/project/
+        docker:
+        - image: devdockerrs/php5.6-apache2.4
+        - image: mariadb
+          environment:
+            - MYSQL_ROOT_PASSWORD=toor
+            - MYSQL_DATABASE=application_bdd
+            - MYSQL_USER=application_user
+            - MYSQL_PASSWORD=password
+        steps:
+            - checkout
+            - run:
+                name: switch ssh deploy key to ssh user-machine
+                command: |
+                    ssh-keygen -y -f ~/.ssh/id_rsa > ~/.ssh/id_rsa.pub
+                    ssh-add -d ~/.ssh/id_rsa.pub
+            - restore_cache:
+                keys:
+                  - composer-v1-{{ checksum "composer.lock" }}
+            - run:
+                name: Install project dependencies
+                command: composer install -n --prefer-dist
+            - save_cache:
+                key: composer-v1-{{ checksum "composer.lock" }}
+                paths:
+                    - vendor
+            - run:
+                name: starting apache
+                command: |
+                    set -e
+                    set -u
+                    apache2ctl start
+                    php5-fpm
+                background: true
+            - run:
+                name: Wait for db
+                command: dockerize -wait tcp://localhost:3306 -timeout 1m
+            - run:
+                name: Loading Database
+                command: mysql -u root -h 127.0.0.1 -ptoor < docker/db/dump.sql
+            - run:
+                name: testing application
+                command: |
+                    mkdir -p ./phpunit
+                    composer test
+                when: always
+            - store_test_results:
+                path: ./phpunit
+            - store_artifacts:
+                path: ./phpunit
+            - run:
+                name: deploy to server
+                command: |
+                    bundle install
+                    if [ "${CIRCLE_BRANCH}" == "develop" ]; then
+                      cap staging deploy
+                      request_body='{"version": "'$(git log --pretty="%h" -n1 HEAD)'"}'
+                      curl $SENTRY_URL_CALLBACK \
+                          -X POST \
+                          -H 'Content-Type: application/json' \
+                          -d "$request_body"
+                    fi
+                    if [ "${CIRCLE_BRANCH}" == "master" ]; then
+                      cap prod deploy
+                      request_body='{"version": "'$(git log --pretty="%h" -n1 HEAD)'"}'
+                      curl $SENTRY_URL_CALLBACK \
+                          -X POST \
+                          -H 'Content-Type: application/json' \
+                          -d "$request_body"
+                    fi

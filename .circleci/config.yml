@@ -1,0 +1,26 @@
+version: 2.0
+jobs:
+    build:
+        docker:
+        - image: devdockerrs/php5.6-apache2.4
+        steps:
+            - checkout
+            - run:
+                name: switch ssh deploy key to ssh user-machine .
+                command: |
+                    ssh-keygen -y -f ~/.ssh/id_rsa > ~/.ssh/id_rsa.pub
+                    cat ~/.ssh/id_rsa.pub 
+                    ssh-add -d ~/.ssh/id_rsa.pub
+            - add_ssh_keys:
+                fingerprints:
+                    - "SHA256:nThbg6kXUpJWGl7E1IGOCspRomTxdCARLviKw6E5SY8"
+            - deploy:
+                name: deployment
+                command: |
+                    bundle install
+                    if [ "${CIRCLE_BRANCH}" == "develop" ]; then
+                      cap staging deploy
+                    fi
+                    if [ "${CIRCLE_BRANCH}" == "master" ]; then
+                      cap prod deploy
+                    fi
