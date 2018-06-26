@@ -54,4 +54,4 @@ end
 #after "deploy:check:directories", "system:install_composer"
 #after "system:install_composer", "system:composer_install"
 #after "system:composer_install", "system:composer_install2"
-before "deploy:check:directories", "system:cleanup"
+after "deploy:check:directories", "system:cleanup"
