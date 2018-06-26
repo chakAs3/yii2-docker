@@ -6,7 +6,7 @@ services:
         # During development we map local files into the container
         volumes:
             # Map current working copy into the container
-            - ./:/var/www/html/
+            - ./current:/var/www/html/
 
             # Uncomment to use dev specific PHP settings
             #- ./config/php/local.ini:/etc/php7/conf.d/99-local.ini
