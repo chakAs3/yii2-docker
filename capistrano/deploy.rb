@@ -4,7 +4,7 @@
 #    overriding the ones you are appending.
 
 # Define the name of the application
-set :application, 'yii-application'
+set :application, 'yii2-docker'
 
 # Define where can Capistrano access the source repository
 # set :repo_url, 'https://github.com/[user name]/[application name].git'
@@ -12,7 +12,7 @@ set :application, 'yii-application'
 set :repo_url, 'https://github.com/chakAs3/yii2-docker.git'
 
 # Define where to put your application code
-set :deploy_to, "/var/www/yii2-docker"
+set :deploy_to, "/var/www/yii2-docker/"
 
 set :pty, true
 
